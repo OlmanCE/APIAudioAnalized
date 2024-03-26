@@ -1,11 +1,11 @@
 from flask import Flask, request, jsonify
+import concurrent.futures
 import os
 import subprocess
 import tempfile
 import speech_recognition as sr
 
 app = Flask(__name__)
-
 # Se encarga de convertir un archivo OPUS a WAV
 # se utiliza la librería FFmpeg para realizar la conversión de formatos de audio
 # ademas se utiliza la librería subprocess para ejecutar FFmpeg desde Python y realizar la conversión
@@ -33,29 +33,32 @@ def transcribe_wav_to_text(wav_file_path, language="es-ES"):
             return "Error: El audio no pudo ser entendido."
         except sr.RequestError as e:
             return f"Error: No se pudo solicitar resultados del servicio de reconocimiento de voz; {e}"
-# Con Flask se crea un endpoint que recibe un archivo OPUS
-# utiliza la función convert_opus_to_wav para convertir el archivo OPUS a WAV
+
 @app.route('/convert-and-transcribe', methods=['POST'])
 def convert_and_transcribe():
-    if 'file' not in request.files:
-        return "No file part", 400
-    file = request.files['file']
-    if file.filename == '':
-        return "No selected file", 400
-    #crea un archivo temporal para guardar el archivo OPUS recibido
+    files = request.files.getlist('file')
+    results = []
+
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        future_to_file = {executor.submit(process_audio_file, file): file for file in files}
+        for future in concurrent.futures.as_completed(future_to_file):
+            results.append(future.result())
+
+    return jsonify(results)
+
+def process_audio_file(file):
     with tempfile.TemporaryDirectory() as tmpdirname:
         input_path = os.path.join(tmpdirname, file.filename)
         output_wav_path = os.path.join(tmpdirname, "output.wav")
-        #guarda el archivo OPUS en el archivo temporal creado
+        
         file.save(input_path)
         
         converted_path = convert_opus_to_wav(input_path, output_wav_path)
         if converted_path:
             text = transcribe_wav_to_text(converted_path)
-            #retorna el texto transcrito en formato JSON
-            return jsonify({"transcription": text})
+            return {"filename": file.filename, "transcription": text}
         else:
-            return "Error converting file", 500
+            return {"filename": file.filename, "error": "Error converting or transcribing file"}
 
 if __name__ == '__main__':
     app.run(debug=True)
