@@ -6,13 +6,8 @@ import tempfile
 import speech_recognition as sr
 
 app = Flask(__name__)
-# Se encarga de convertir un archivo OPUS a WAV
-# se utiliza la librería FFmpeg para realizar la conversión de formatos de audio
-# ademas se utiliza la librería subprocess para ejecutar FFmpeg desde Python y realizar la conversión
 def convert_opus_to_wav(input_file_path, output_file_path):
     try:
-        # subprocess.run se encarga de ejecutar FFmpeg y convertir el archivo OPUS a WAV 
-        # asimilando el comando de terminal: ffmpeg -i input_file_path output_file_path
         subprocess.run(['ffmpeg', '-i', input_file_path, output_file_path], check=True)
         return output_file_path
     except Exception as e:
@@ -54,6 +49,7 @@ def process_audio_file(file):
         file.save(input_path)
         
         converted_path = convert_opus_to_wav(input_path, output_wav_path)
+        # TODO Funcion para llamar a la IA que categoriza el texto transcrito y retorna la categoria
         if converted_path:
             text = transcribe_wav_to_text(converted_path)
             return {"filename": file.filename, "transcription": text}
