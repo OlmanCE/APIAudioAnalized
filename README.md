@@ -58,6 +58,9 @@ Ejemplo de Uso
 ## Screenshots
 
 ![ Test desde Postman](https://github.com/OlmanCE/APIAudioAnalized/assets/114628295/22675ffb-70d7-4041-afe6-346692393819)
-## Documentation
+## Limitaciones
 
+El reconocimiento de voz depende del servicio de Google, por lo que se requiere una conexión a Internet y los límites de cuota de este servicio pueden aplicar.
+
+## Documentation
 [Install FFMPEG](https://ffmpeg.org/download.html )
