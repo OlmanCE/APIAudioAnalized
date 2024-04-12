@@ -46,9 +46,9 @@ async def process_audio_file(file: UploadFile) -> dict:
         converted_path = await convert_opus_to_wav(input_path, output_wav_path)
         if converted_path:
             text = await transcribe_wav_to_text(converted_path)
-            return {"filename": file.filename, "transcription": text}
+            return {"transcription": text}
         else:
-            return {"filename": file.filename, "error": "Error converting or transcribing file"}
+            return {"error": "Error converting or transcribing file"}
 
 @app.post("/convert-and-transcribe/")
 async def convert_and_transcribe(files: List[UploadFile] = File(...)):
