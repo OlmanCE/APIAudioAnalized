@@ -17,7 +17,7 @@ Las dependencias se encuentran en el archvio requeriments.txt
 
 ## API Reference
 
-#### Get all items
+#### Enviar N audios a procesar
 
 ```http
   POST /api/items
